@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fesor\RequestObject\Bundle\DependeyInjection;
 
-use Fesor\RequestObject\Bundle\RequestObjectEventListener;
+use Fesor\RequestObject\Bundle\ControllerEventListener;
 use Fesor\RequestObject\HttpPayloadResolver;
 use Fesor\RequestObject\PayloadResolver;
 use Fesor\RequestObject\RequestObjectBinder;
@@ -12,46 +14,43 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 
-class RequestObjectExtension extends Extension
+final class RequestObjectExtension extends Extension
 {
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $this->registerPayloadResolver($container);
         $this->registerRequestBinder($container);
         $this->registerEventListener($container);
     }
 
-    private function registerPayloadResolver(ContainerBuilder $container)
+    private function registerPayloadResolver(ContainerBuilder $container): void
     {
-        $definition = new Definition(PayloadResolver::class);
-        $definition->setAbstract(true);
-        $container->setDefinition('request_object.payload_resolver', $definition);
+        $container->setDefinition(HttpPayloadResolver::class, new Definition(HttpPayloadResolver::class));
 
-        $implDefinition = new ChildDefinition('request_object.payload_resolver');
-        $implDefinition->setClass(HttpPayloadResolver::class);
-        $container->setDefinition('request_object.payload_resolver.http', $implDefinition);
-
-        $container->setAlias(PayloadResolver::class, 'request_object.payload_resolver.http');
+        $container->setAlias(PayloadResolver::class, HttpPayloadResolver::class);
+        $container->setAlias('request_object.payload_resolver', PayloadResolver::class);
+        $container->setAlias('request_object.payload_resolver.http', HttpPayloadResolver::class);
     }
 
-    private function registerRequestBinder(ContainerBuilder $container)
+    private function registerRequestBinder(ContainerBuilder $container): void
     {
         $definition = new Definition(RequestObjectBinder::class, []);
         $definition->setAutowired(true);
         $definition->setPublic(false);
-        $container->setDefinition('request_object.request_binder', $definition);
+        $container->setDefinition(RequestObjectBinder::class, $definition);
+        $container->setAlias('request_object.request_binder', RequestObjectBinder::class);
     }
 
-    private function registerEventListener(ContainerBuilder $container)
+    private function registerEventListener(ContainerBuilder $container): void
     {
-        $definition = new Definition(RequestObjectEventListener::class, [
-            new Reference('request_object.request_binder'),
+        $definition = new Definition(ControllerEventListener::class, [
+            new Reference(RequestObjectBinder::class),
         ]);
         $definition->addTag('kernel.event_listener', array(
             'event' => 'kernel.controller',
-            'method' => 'onKernelController',
         ));
 
-        $container->setDefinition('request_object.event_listener.controller', $definition);
+        $container->setDefinition(ControllerEventListener::class, $definition);
+        $container->setAlias('request_object.event_listener.controller', ControllerEventListener::class);
     }
 }

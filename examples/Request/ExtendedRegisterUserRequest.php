@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fesor\RequestObject\Examples\Request;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class ExtendedRegisterUserRequest extends RegisterUserRequest
+final class ExtendedRegisterUserRequest extends RegisterUserRequest
 {
     public function rules()
     {

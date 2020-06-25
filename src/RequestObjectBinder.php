@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fesor\RequestObject;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -7,30 +9,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class RequestObjectBinder
+final class RequestObjectBinder
 {
-    /**
-     * @var ValidatorInterface
-     */
-    private $validator;
+    private ValidatorInterface $validator;
+    private PayloadResolver $payloadResolver;
+    private ?ErrorResponseProvider $errorResponseProvider;
 
-    /**
-     * @var PayloadResolver
-     */
-    private $payloadResolver;
-
-    /**
-     * @var ErrorResponseProvider|null
-     */
-    private $errorResponseProvider;
-
-    /**
-     * RequestObjectBinder constructor.
-     *
-     * @param PayloadResolver            $payloadResolver
-     * @param ValidatorInterface         $validator
-     * @param ErrorResponseProvider|null $errorResponseProvider
-     */
     public function __construct(
         PayloadResolver $payloadResolver,
         ValidatorInterface $validator,
@@ -41,17 +25,11 @@ class RequestObjectBinder
         $this->errorResponseProvider = $errorResponseProvider;
     }
 
-    /**
-     * @param Request  $request
-     * @param callable $action
-     *
-     * @return Response|void
-     */
-    public function bind(Request $request, callable $action)
+    public function bind(Request $request, callable $action): ?Response
     {
         $matchedArguments = $this->matchActionArguments($action);
         if (!array_key_exists('requestObject', $matchedArguments)) {
-            return;
+            return null;
         }
 
         $requestObjectClass = $matchedArguments['requestObject']->getClass()->name;
@@ -76,17 +54,14 @@ class RequestObjectBinder
         } elseif ($errors && 0 !== $errors->count()) {
             return $this->providerErrorResponse($requestObject, $errors);
         }
+
+        return null;
     }
 
     /**
-     * @param RequestObject                    $requestObject
-     * @param ConstraintViolationListInterface $errors
-     *
-     * @return Response
-     *
      * @throws InvalidRequestPayloadException
      */
-    private function providerErrorResponse(RequestObject $requestObject, ConstraintViolationListInterface $errors)
+    private function providerErrorResponse(RequestObject $requestObject, ConstraintViolationListInterface $errors): Response
     {
         if ($requestObject instanceof ErrorResponseProvider) {
             return $requestObject->getErrorResponse($errors);
@@ -99,20 +74,14 @@ class RequestObjectBinder
         throw new InvalidRequestPayloadException($requestObject, $errors);
     }
 
-    /**
-     * @param callable $action
-     *
-     * @return array
-     */
-    private function matchActionArguments(callable $action)
+    private function matchActionArguments(callable $action): array
     {
         if (is_array($action)) {
             $classReflection = new \ReflectionClass($action[0]);
             $actionReflection = $classReflection->getMethod($action[1]);
         } elseif ($action instanceof \Closure || is_string($action)) {
             $actionReflection = new \ReflectionFunction($action);
-        }
-        else {
+        } else {
             $classReflection = new \ReflectionClass($action);
             $actionReflection = $classReflection->getMethod('__invoke');
         }
@@ -131,7 +100,7 @@ class RequestObjectBinder
         return $matchedArguments;
     }
 
-    private function resolvePayload(RequestObject $requestObject, Request $request)
+    private function resolvePayload(RequestObject $requestObject, Request $request): array
     {
         if ($requestObject instanceof PayloadResolver) {
             return $requestObject->resolvePayload($request);
@@ -140,13 +109,7 @@ class RequestObjectBinder
         return $this->payloadResolver->resolvePayload($request);
     }
 
-    /**
-     * @param \ReflectionParameter $argument
-     * @param string               $subtype
-     *
-     * @return bool
-     */
-    private function isArgumentIsSubtypeOf(\ReflectionParameter $argument, $subtype)
+    private function isArgumentIsSubtypeOf(\ReflectionParameter $argument, $subtype): bool
     {
         if (!($className = $argument->getClass())) {
             return false;

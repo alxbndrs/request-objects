@@ -1,21 +1,17 @@
 <?php
 
-namespace Fesor\RequestObject;
+declare(strict_types=1);
 
+namespace Fesor\RequestObject\Exception;
+
+use Fesor\RequestObject\RequestObject;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class InvalidRequestPayloadException extends \Exception
 {
-    private $requestObject;
+    private RequestObject $requestObject;
+    private ConstraintViolationListInterface $errors;
 
-    private $errors;
-
-    /**
-     * InvalidRequestPayloadException constructor.
-     *
-     * @param RequestObject                    $requestObject
-     * @param ConstraintViolationListInterface $errors
-     */
     public function __construct(RequestObject $requestObject, ConstraintViolationListInterface $errors)
     {
         parent::__construct();
@@ -24,18 +20,12 @@ class InvalidRequestPayloadException extends \Exception
         $this->errors = $errors;
     }
 
-    /**
-     * @return RequestObject
-     */
-    public function getRequestObject()
+    public function getRequestObject(): RequestObject
     {
         return $this->requestObject;
     }
 
-    /**
-     * @return ConstraintViolationListInterface
-     */
-    public function getErrors()
+    public function getErrors(): ConstraintViolationListInterface
     {
         return $this->errors;
     }

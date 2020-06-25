@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fesor\RequestObject\Examples\App;
 
 use Fesor\RequestObject\Bundle\RequestObjectBundle;
@@ -7,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
-class AppKernel extends Kernel
+final class AppKernel extends Kernel
 {
     public function registerBundles()
     {
@@ -19,6 +21,6 @@ class AppKernel extends Kernel
 
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
-        $loader->load($this->getRootDir().'/config.yml');
+        $loader->load($this->getProjectDir().'/config.yml');
     }
 }

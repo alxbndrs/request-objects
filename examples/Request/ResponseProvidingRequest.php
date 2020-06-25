@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fesor\RequestObject\Examples\Request;
 
 use Fesor\RequestObject\ErrorResponseProvider;
 use Fesor\RequestObject\RequestObject;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
-class ResponseProvidingRequest extends RequestObject implements ErrorResponseProvider
+final class ResponseProvidingRequest extends RequestObject implements ErrorResponseProvider
 {
     public function rules()
     {
@@ -18,10 +21,7 @@ class ResponseProvidingRequest extends RequestObject implements ErrorResponsePro
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getErrorResponse(ConstraintViolationListInterface $errors)
+    public function getErrorResponse(ConstraintViolationListInterface $errors): Response
     {
         return new JsonResponse([
             'message' => 'Please check your data',

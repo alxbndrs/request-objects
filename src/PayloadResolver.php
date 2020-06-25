@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fesor\RequestObject;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +17,6 @@ interface PayloadResolver
      *
      * The only note that payload should be closest
      * to request as it possible.
-     *
-     * @param Request $request
-     *
-     * @return array
      */
-    public function resolvePayload(Request $request);
+    public function resolvePayload(Request $request): array;
 }

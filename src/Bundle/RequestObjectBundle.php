@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fesor\RequestObject\Bundle;
 
 use Fesor\RequestObject\Bundle\DependeyInjection\RequestObjectExtension;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class RequestObjectBundle extends Bundle
+final class RequestObjectBundle extends Bundle
 {
-    protected function getContainerExtensionClass()
+    protected function getContainerExtensionClass(): string
     {
         return RequestObjectExtension::class;
     }

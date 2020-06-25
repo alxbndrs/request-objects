@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fesor\RequestObject\Examples\Request;
 
 use Fesor\RequestObject\RequestObject;
@@ -14,7 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * validator... Please consider to use CallbackValidator
  * for cases like this. Or you can make some helper-function.
  */
-class ContextDependingRequest extends RequestObject
+final class ContextDependingRequest extends RequestObject
 {
     public function rules()
     {
@@ -40,10 +42,10 @@ class ContextDependingRequest extends RequestObject
         ];
     }
 
-    public function validationGroup(array $payload)
+    public function validationGroup(array $payload): array
     {
         return isset($payload['context']) ?
-            ['Default', $payload['context']] : null;
+            ['Default', $payload['context']] : [];
     }
 
     private function collection($fields, array $options = null)
